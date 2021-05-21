@@ -5,6 +5,7 @@ https://github.com/websterguy/pf1-magic-item-gen/releases/latest/download/module
 
 ## Usage
 Launch the item generator by clicking this button at the bottom of the items tab in the sidebar.
+
 ![image](https://user-images.githubusercontent.com/54455090/119202310-5ebebb80-ba45-11eb-8555-b8427384f489.png)
 
 
