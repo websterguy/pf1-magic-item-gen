@@ -16,7 +16,7 @@
   "systems": ["pf1"],
   "esmodules": ["./scripts/itemGen.js"],
   "styles": ["./styles/itemGen.css"],
-  "templates": ["./templates/itemGenDialog.html", "./templates/sbcPreview"],
+  "templates": ["./templates/itemGenDialog.html", "./templates/weaponCreate.hbs", "./templates/abilitySelection.hbs"],
   "packs": [],
   "url": "https://github.com/websterguy/pf1-magic-item-gen",
   "manifest": "https://github.com/websterguy/pf1-magic-item-gen/releases/latest/download/module.json",
