@@ -1,0 +1,20 @@
+<div>
+    <label for="baseItemSelect">Select Base Item:</label>
+    <select id="baseItemSelect">
+        {{#each data.weapons as |weapon|}}<option value="">{{weapon.data.name}}</option>{{/each}}
+    </select>
+</div>
+<div>
+    <label for="sizeSelect">Select Size:</label>
+    <select name="sizeSelect">
+        <option value="fine">Fine</option>
+        <option value="dim">Diminutive</option>
+        <option value="tiny">Tiny</option>
+        <option value="sm">Small</option>
+        <option value="med" selected="">Medium</option>
+        <option value="lg">Large</option>
+        <option value="huge">Huge</option>
+        <option value="grg">Gargantuan</option>
+        <option value="col">Colossal</option>
+    </select>
+</div>

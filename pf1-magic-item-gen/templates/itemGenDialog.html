@@ -1,0 +1,120 @@
+<form>
+    <section id="itemSetup">
+        <div id="itemCatSelect">
+            <legend>Select Item Type:</legend>
+            <input type="radio" name="itemCat" id="weaponSelect" value="weapon" checked>
+            <label for="weaponSelect">Weapon / Ammunition</label>
+            <input type="radio" name="itemCat" id="armorSelect" value="armor">
+            <label for="armorSelect">Armor / Shield</label>
+        </div>
+        <div id="itemBuilder">
+            <div id="itemTypeSelect">
+                <legend>Select Item Type:</legend>
+                <input type="radio" name="itemType" id="meleeWeapon" value="meleeWeapon" checked>
+                <label for="meleeWeapon">Melee Weapon</label>
+                <input type="radio" name="itemType" id="rangedWeapon" value="rangedWeapon">
+                <label for="rangedWeapon">Ranged Weapon</label>
+                <input type="radio" name="itemType" id="ammunition" value="ammunition">
+                <label for="ammunition">Ammunition</label>
+            </div>
+            <div>
+                <legend >Select Base Item:</legend>
+                <select id="baseItemSelect">
+                    {{#each weapons as |weapon id|}}<option value="{{weapon.data._id}}">{{weapon.data.name}}</option>{{/each}}
+                </select>
+            </div>
+            <div>
+                <legend>Select Size:</legend>
+                <select id="sizeSelect">
+                    <option value="fine">Fine</option>
+                    <option value="dim">Diminutive</option>
+                    <option value="tiny">Tiny</option>
+                    <option value="sm">Small</option>
+                    <option value="med" selected="">Medium</option>
+                    <option value="lg">Large</option>
+                    <option value="huge">Huge</option>
+                    <option value="grg">Gargantuan</option>
+                    <option value="col">Colossal</option>
+                </select>
+            </div>
+            <div id="qualitySelect">
+                <legend>Select Weapon Quality:</legend>
+                <input type="radio" name="qualitySelect" id="normal" value="normal" checked>
+                <label for="normal">Normal</label>
+                <input type="radio" name="qualitySelect" id="masterwork" value="masterwork">
+                <label for="masterwork">Masterwork</label>
+                <input type="radio" name="qualitySelect" id="magic" value="magic">
+                <label for="magic">Magic</label>
+            </div>
+            <div id="bonusChooser">
+                <legend>Select Enhancement Level:</legend>
+                <input type="radio" name="enhancementSelect" id="enhancement0" value="0" checked>
+                <label for="enhancement0">0</label>
+                <input type="radio" name="enhancementSelect" id="enhancement1" value="1">
+                <label for="enhancement1">1</label>
+                <input type="radio" name="enhancementSelect" id="enhancement2" value="2">
+                <label for="enhancement2">2</label>
+                <input type="radio" name="enhancementSelect" id="enhancement3" value="3">
+                <label for="enhancement3">3</label>
+                <input type="radio" name="enhancementSelect" id="enhancement4" value="4">
+                <label for="enhancement4">4</label>
+                <input type="radio" name="enhancementSelect" id="enhancement5" value="5">
+                <label for="enhancement5">5</label>
+            </div>
+            <hr>
+            <div id="abilitySelectors">
+                <legend>+0 (Static Cost) Abilities</legend>
+                <ul>
+                    {{#each weaponAbilities.b0 as |abilities|}}<li><input type="checkbox" value="{{abilities.id}}" id="{{abilities.data.name}}" class="abilityCheckBox"><label for="{{abilities.data.name}}">{{abilities.data.name}}</label></li>{{/each}}
+                </ul>
+                <legend>+1 Abilities</legend>
+                <ul>
+                    {{#each weaponAbilities.b1 as |abilities|}}<li><input type="checkbox" value="{{abilities.id}}" id="{{abilities.data.name}}" class="abilityCheckBox"><label for="{{abilities.data.name}}">{{abilities.data.name}}</label></li>{{/each}}
+                </ul>
+                <legend>+2 Abilities</legend>
+                <ul>
+                    {{#each weaponAbilities.b2 as |abilities|}}<li><input type="checkbox" value="{{abilities.id}}" id="{{abilities.data.name}}" class="abilityCheckBox"><label for="{{abilities.data.name}}">{{abilities.data.name}}</label></li>{{/each}}
+                </ul>
+                <legend>+3 Abilities</legend>
+                <ul>
+                    {{#each weaponAbilities.b3 as |abilities|}}<li><input type="checkbox" value="{{abilities.id}}" id="{{abilities.data.name}}" class="abilityCheckBox"><label for="{{abilities.data.name}}">{{abilities.data.name}}</label></li>{{/each}}
+                </ul>
+                <legend>+4 Abilities</legend>
+                <ul>
+                    {{#each weaponAbilities.b4 as |abilities|}}<li><input type="checkbox" value="{{abilities.id}}" id="{{abilities.data.name}}" class="abilityCheckBox"><label for="{{abilities.data.name}}">{{abilities.data.name}}</label></li>{{/each}}
+                </ul>
+                <legend>+5 Abilities</legend>
+                <ul>
+                    {{#each weaponAbilities.b5 as |abilities|}}<li><input type="checkbox" value="{{abilities.id}}" id="{{abilities.data.name}}" class="abilityCheckBox"><label for="{{abilities.data.name}}">{{abilities.data.name}}</label></li>{{/each}}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="itemPreview">
+        <div id="itemDetailsDisplay">
+            <p class="overbudgetError"></p>
+            <p><span class="previewLabel">Base Item Name:</span> {{itemChosen.data.name}}</p>
+            <p><span class="previewLabel">Weight:</span> {{itemChosen.data.data.weight}}</p>
+            <p><span class="previewLabel">Cost:</span> {{itemChosen.data.data.price}}</p>
+            <p><span class="previewLabel">Quality:</span> {{masterwork}}</p>
+            <p><span class="previewLabel">Enhancement Bonus:</span> 0</p>
+            <p><span class="previewLabel">Total Bonus:</span> 0</p>
+        </div>
+    </section>
+    <section id="creationOptions">
+        On Creation:
+        <input type="radio" name="creationOptions" id="createItemOption" value="create" checked>
+        <label for="createItemOption">Create Item</label>
+        <input type="radio" name="creationOptions" id="giveItemOption" value="give">
+        <label for="giveItemOption">Give Item to Actor:</label>
+        <select id="giveActorSelect">
+            {{#each actors as |actors|}}<option value="{{actors.id}}">{{actors.name}}</option>{{/each}}
+        </select>
+    </section>
+    <section id="buttonSection">
+        <button id="itemGenSubmit" type="button"><i class="fas fa-dice-d20"></i> Create Item</button>
+        <button id="itemGenReset" type="button"><i class="fas fa-sync-alt"></i> Reset Form</button>
+        <button id="itemGenCancel" type="button"><i class="fas fa-times"></i> Cancel</button>
+    </section>
+</form>

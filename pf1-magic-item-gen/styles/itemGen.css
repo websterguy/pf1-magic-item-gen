@@ -1,0 +1,88 @@
+#itemGenDialog form {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+#abilitySelectors ul li {
+    display: inline-block;
+    width: 175px;
+}
+
+#itemSetup {
+    overflow-y: scroll;
+    flex-grow: 1;
+}
+
+#itemSetup select {
+    width: 250px;
+}
+
+#itemPreview .overbudgetError {
+    background: #FF0000;
+    color: #FFFFFF;
+}
+
+#itemPreview .previewLabel {
+    display: inline-block;
+    width: 150px;
+}
+
+#buttonSection {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+}
+
+#itemPreview {
+    border-top: 1px solid #000000;
+    flex-shrink: 0;
+}
+
+#itemCatSelect label {
+    display: inline-block;
+    width: 150px;
+}
+
+#itemTypeSelect label {
+    display: inline-block;
+    width: 100px;
+}
+
+#qualitySelect label {
+    display: inline-block;
+    width: 100px;
+}
+
+#bonusChooser label {
+    display: inline-block;
+    width: 20px;
+}
+
+#itemSetup legend {
+    font-weight: bold;
+}
+
+#itemSetup select, #itemSetup input:not([type=checkbox]) {
+    margin-bottom: 10px;
+}
+
+#itemSetup ul {
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+#itemSetup ul input[type=checkbox] {
+    margin: 0px 5px 0px 0px;
+}
+
+#itemSetup ul label {
+    top: -5px;
+    position: relative;
+}
+
+.sidebar-tab .directory-footer .genButton {
+    flex-basis: 100%;
+    margin-top: 5px;
+}
