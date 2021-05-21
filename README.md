@@ -6,8 +6,7 @@ https://github.com/websterguy/pf1-magic-item-gen/releases/latest/download/module
 ## Usage
 Launch the item generator by clicking this button at the bottom of the items tab in the sidebar.
 
-![image](https://user-images.githubusercontent.com/54455090/119202310-5ebebb80-ba45-11eb-8555-b8427384f489.png)
-
+![image](https://user-images.githubusercontent.com/54455090/119202687-31264200-ba46-11eb-919f-5fa3eff19ca3.png)
 
 ## Description
 This module assists in creating custom weapons and items for the PF1e system in Foundry VTT.
