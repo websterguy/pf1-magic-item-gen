@@ -1,18 +1,3 @@
-// import { sbcConfig } from "./sbcConfig.js"
-// import { sbcApp } from "./sbc.js"
-// import { sbcParser } from "./sbcParser.js"
-// import { sbcUtils } from "./sbcUtils.js"
-// import { sbcData, sbcError } from "./sbcData.js"
-
-/* ------------------------------------ */
-/* itemSetup						*/
-/* Create a modal dialog with           */
-/* an input, preview and error area.    */
-/* Input is saved in a raw format and   */
-/* send to sbcParser.js to convert to   */
-/* workable data.                       */
-/* ------------------------------------ */
-
 import { genWeaponAbilities } from "./genWeaponAbilities.js";
 import { genArmorAbilities } from "./genArmorAbilities.js";
 
@@ -189,19 +174,23 @@ export class itemSetup extends FormApplication {
         for (let i = 0; i < itemSetup.staticBonuses.length; i++) {
             itemSetup.flatBonusCost += itemSetup.staticBonuses[i].priceMod;
         }
-        itemSetup.price =
-            itemSetup.basePrice +
-            (itemSetup.masterwork ? itemSetup.mwCost[itemSetup.itemCategory] : 0) +
-            (itemSetup.magic ? itemSetup.totalBonusCost[itemSetup.itemCategory][Math.min(10, itemSetup.totalBonus)] : 0) +
-            itemSetup.flatBonusCost;
+
+        let extraCost = (itemSetup.masterwork ? itemSetup.mwCost[itemSetup.itemCategory] : 0) +
+        (itemSetup.magic ? itemSetup.totalBonusCost[itemSetup.itemCategory][Math.min(10, itemSetup.totalBonus)] : 0) +
+        itemSetup.flatBonusCost;
+
+        if (itemSetup.itemChosen.data.type === "loot" && itemSetup.masterwork) {
+            extraCost /= 50;
+        }
+        itemSetup.price = itemSetup.basePrice + extraCost;
     }
 
     static async updateDisplay(html) {
         let display = `
             ${itemSetup.totalBonus > 10 ? "<p class='overbudgetError'>Warning: Total Bonus Greater than 10!</p>" : ""}
-            <p><span class="previewLabel">Base Item Name:</span> ${itemSetup.itemName}</p>
+            <p><span class="previewLabel">Base Item Name:</span> ${itemSetup.itemName}${(itemSetup.itemChosen.data.type === "loot" & itemSetup.masterwork ? " (50)" : "")}</p>
             <p><span class="previewLabel">Weight:</span> ${itemSetup.weight}</p>
-            <p><span class="previewLabel">Cost:</span> ${itemSetup.price}</p>
+            <p><span class="previewLabel">Cost:</span> ${itemSetup.price}${(itemSetup.itemChosen.data.type === "loot" & itemSetup.masterwork ? " each (" + itemSetup.price * 50 + " total)" : "")}</p>
             <p><span class="previewLabel">Quality:</span> ${(itemSetup.totalBonus > 0 || itemSetup.flatBonusCost > 0) ? "Magic" : itemSetup.masterwork ? "Masterwork" : "Normal"}</p>
             <p><span class="previewLabel">Enhancement Bonus:</span> ${itemSetup.enhancement}</p>
             <p><span class="previewLabel">Total Bonus:</span> ${itemSetup.totalBonus}</p>`;
@@ -406,11 +395,21 @@ export class itemSetup extends FormApplication {
             }
 
             item.data.weight = itemSetup.weight;
+
+            // Set price with special adjustment for masterwork/magic ammo
+            if (item.type === "loot" && itemSetup.masterwork) {
+                item.data.quantity = 50;
+            }
+            else {
+                item.data.price = itemSetup.price;
+            }
+
             item.data.price = itemSetup.price;
 
             if (itemSetup.masterwork) {
                 item.data.masterwork = true;
             }
+
             if (itemSetup.magic) {
                 let largestCL = 3 * itemSetup.enhancement;
                 let largestAura = largestCL > 0 ? (itemSetup.itemCategory === "weapon" ? "evo" : "abj") : "";
@@ -431,10 +430,6 @@ export class itemSetup extends FormApplication {
                 }
                 else if (item.type === "weapon") {
                     item.data.enh = itemSetup.enhancement;
-                }
-
-                if (item.type === "loot") {
-                    item.data.quantity = 50;
                 }
 
                 let itemPrefix = "";
@@ -465,8 +460,6 @@ export class itemSetup extends FormApplication {
                 item.data.identifiedName = item.name = itemPrefix + item.name;
 
             }
-
-
 
             if ($('input[type="radio"][name="creationOptions"]:checked')[0].value === "create") {
                 await Item.create(item);
