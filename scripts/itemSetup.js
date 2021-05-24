@@ -51,7 +51,12 @@ export class itemSetup extends FormApplication {
 
     async getData() {
         let data = {};
-        let weaponIndex = await game.packs.get("pf1.weapons-and-ammo").getContent();
+        let weaponIndex = await game.packs.get("pf1.weapons-and-ammo").getDocuments();
+        weaponIndex.sort((a,b) => {
+            if (a.name < b.name) return -1;
+            if (a.name > b.name) return 1;
+            return 0;
+        });
         let weapons = itemSetup.items = await weaponIndex.filter(o => o.data.type === "weapon" && o.data.data.weaponSubtype != "ranged");
         data.weapons = weapons;
         itemSetup.itemChosen = weapons[0];
@@ -78,7 +83,7 @@ export class itemSetup extends FormApplication {
                 data: itemSetup.specialAbilities[weaponAbilitiesIds[i]]});
         }
 
-        data.actors = game.actors.entities;
+        data.actors = game.actors.contents;
 
         return data;
     }
@@ -201,10 +206,10 @@ export class itemSetup extends FormApplication {
     static async updateItemSelector(html) {
         let itemIndex;
         if (itemSetup.itemCategory === "weapon") {
-            itemIndex = await game.packs.get("pf1.weapons-and-ammo").getContent();
+            itemIndex = await game.packs.get("pf1.weapons-and-ammo").getDocuments();
         }
         else if (itemSetup.itemCategory === "armor") {
-            itemIndex = await game.packs.get("pf1.armors-and-shields").getContent();
+            itemIndex = await game.packs.get("pf1.armors-and-shields").getDocuments();
         }
 
         let subtype = $('#itemTypeSelect input[name="itemType"]:checked')[0].value;
@@ -228,6 +233,12 @@ export class itemSetup extends FormApplication {
             itemSetup.items = await itemIndex.filter(o => o.data.type === "equipment" && o.data.data.equipmentType === "shield");
             itemSetup.specialAbilities = genArmorAbilities.shieldAbilities;
         }
+
+        itemSetup.items.sort((a,b) => {
+            if (a.name < b.name) return -1;
+            if (a.name > b.name) return 1;
+            return 0;
+        });
 
         let itemOptionsHtml = ""
         for (var i = 0; i < itemSetup.items.length; i++) {
@@ -377,37 +388,38 @@ export class itemSetup extends FormApplication {
 
         $('#itemGenSubmit').on('click', async function() {
             let item = itemSetup.itemChosen.data;
-            if (item._id) delete item._id;
 
+            let itemData = item;
 
             let sizeHpMult = {fine: .0625, dim: .125, tiny: .25, sm: .5, med: 1, lg: 2, huge: 4, grg: 8, col: 16}
 
-            item.data.hp.value = item.data.hp.max = Math.max(1, Math.floor(item.data.hp.max * sizeHpMult[sizeSelect[0].value]));
+
+            itemData.data.hp.value = itemData.data.hp.max = Math.max(1, Math.floor(item.data.hp.max * sizeHpMult[sizeSelect[0].value]));
 
             let bonusesSelected = $('#abilitySelectors input[type="checkbox"]:checked');
             let bonuses = [];
 
             if (item.type === "equipment") {
-                item.data.size = $('#sizeSelect')[0].value;
+                itemData.data.size = $('#sizeSelect')[0].value;
             }
             else if (item.type === "weapon") {
-                item.data.weaponData.size = $('#sizeSelect')[0].value;
+                itemData.data.weaponData.size = $('#sizeSelect')[0].value;
             }
 
-            item.data.weight = itemSetup.weight;
+            itemData.data.weight = itemSetup.weight;
 
             // Set price with special adjustment for masterwork/magic ammo
             if (item.type === "loot" && itemSetup.masterwork) {
-                item.data.quantity = 50;
+                itemData.data.quantity = 50;
             }
             else {
-                item.data.price = itemSetup.price;
+                itemData.data.price = itemSetup.price;
             }
 
-            item.data.price = itemSetup.price;
+            itemData.data.price = itemSetup.price;
 
             if (itemSetup.masterwork) {
-                item.data.masterwork = true;
+                itemData.data.masterwork = true;
             }
 
             if (itemSetup.magic) {
@@ -423,13 +435,13 @@ export class itemSetup extends FormApplication {
                     return 0;
                 });
 
-                item.data.hardness += (2 * itemSetup.enhancement);
-                item.data.hp.value = item.data.hp.max += (10 * itemSetup.enhancement);
+                itemData.data.hardness += (2 * itemSetup.enhancement);
+                itemData.data.hp.value = itemData.data.hp.max += (10 * itemSetup.enhancement);
                 if (item.type === "equipment") {
-                    item.data.armor.enh = itemSetup.enhancement;
+                    itemData.data.armor.enh = itemSetup.enhancement;
                 }
                 else if (item.type === "weapon") {
-                    item.data.enh = itemSetup.enhancement;
+                    itemData.data.enh = itemSetup.enhancement;
                 }
 
                 let itemPrefix = "";
@@ -451,25 +463,26 @@ export class itemSetup extends FormApplication {
                         largestAura = "misc";
                     }
 
-                    item.data.description.value += "<p><strong>" + bonuses[i].output + "</strong></p><p>" + bonuses[i].desc + "</p>";
+                    itemData.data.description.value += "<p><strong>" + bonuses[i].output + "</strong></p><p>" + bonuses[i].desc + "</p>";
                 }
                 itemPrefix += " ";
 
-                item.data.cl = largestCL;
-                item.data.aura.school = largestAura;
-                item.data.identifiedName = item.name = itemPrefix + item.name;
+                itemData.data.cl = largestCL;
+                itemData.data.aura.school = largestAura;
+                itemData.data.identifiedName = itemData.name = itemPrefix + itemData.name;
 
+                item.update(itemData);
             }
 
             if ($('input[type="radio"][name="creationOptions"]:checked')[0].value === "create") {
                 await Item.create(item);
+                ui.notifications.info(item.name + " created");
             }
             else {
                 let actorId = $('#giveActorSelect')[0].value;
-                game.actors.get(actorId).createEmbeddedEntity("OwnedItem", item);
+                game.actors.get(actorId).createEmbeddedDocuments("Item", [item]);
+                ui.notifications.info(item.name + " given to " + game.actors.get(actorId).name);
             }
-
-            ui.notifications.info(itemSetup.itemName + " created");
 
             itemSetup.itemSetupInstance.close();
         })
