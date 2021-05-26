@@ -37,6 +37,12 @@
                     <option value="col">Colossal</option>
                 </select>
             </div>
+            <div>
+                <legend>Select Special Material</legend>
+                <select id="materialSelect">
+                    {{#each materials as |material|}}<option value="{{material.id}}">{{material.display}}</option>{{/each}}
+                </select>
+            </div>
             <div id="qualitySelect">
                 <legend>Select Weapon Quality:</legend>
                 <input type="radio" name="qualitySelect" id="normal" value="normal" checked>
@@ -92,14 +98,19 @@
     </section>
 
     <section id="itemPreview">
-        <div id="itemDetailsDisplay">
-            <p class="overbudgetError"></p>
+        <p id="overbudgetError"></p>
+        <div id="itemDetailsDisplay1">
             <p><span class="previewLabel">Base Item Name:</span> {{itemChosen.data.name}}</p>
             <p><span class="previewLabel">Weight:</span> {{itemChosen.data.data.weight}}</p>
             <p><span class="previewLabel">Cost:</span> {{itemChosen.data.data.price}}</p>
             <p><span class="previewLabel">Quality:</span> {{masterwork}}</p>
             <p><span class="previewLabel">Enhancement Bonus:</span> 0</p>
             <p><span class="previewLabel">Total Bonus:</span> 0</p>
+        </div>
+        <div id="itemDetailsDisplay2">
+            <p><span class="previewLabel">Special Material:</span> No Special Material</p>
+            <p><span class="previewLabel">HP:</span> {{itemChosen.data.data.hp.max}}</p>
+            <p><span class="previewLabel">Hardness:</span> {{itemChosen.data.data.hardness}}</p>
         </div>
     </section>
     <section id="creationOptions">
