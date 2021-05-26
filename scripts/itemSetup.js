@@ -1,5 +1,6 @@
 import { genWeaponAbilities } from "./genWeaponAbilities.js";
 import { genArmorAbilities } from "./genArmorAbilities.js";
+import { genSpecialMaterials } from "./genSpecialMaterials.js";
 
 export class itemSetup extends FormApplication {
 
@@ -8,6 +9,7 @@ export class itemSetup extends FormApplication {
     static itemName = "";
     static itemCategory = "weapon";
     static specialAbilities = {};
+    static materialChosen = {};
     static basePrice = 0;
     static price = 0;
     static weight = 0;
@@ -19,10 +21,15 @@ export class itemSetup extends FormApplication {
     static cl = 0;
     static aura = "";
     static staticBonuses = [];
+    static sizeHp = 0;
+    static sizeHardness = 0;
+    static hp = 0;
+    static hardness = 0;
 
     static priceMult = {fine: .5, dim: .5, tiny: .5,sm: 1, med: 1, lg: 2, huge: 4, grg: 8, col: 16};
     static weightMult = {fine: .1, dim: .1, tiny: .1,sm: .5, med: 1, lg: 2, huge: 5, grg: 8, col: 12};
     static mwCost = {weapon: 300, armor: 150};
+    static sizeHpMult = {fine: .0625, dim: .125, tiny: .25, sm: .5, med: 1, lg: 2, huge: 4, grg: 8, col: 16}
 
     static totalBonusCost = {
         armor: [0, 1_000, 4_000, 9_000, 16_000, 25_000, 36_000, 49_000, 64_000, 81_000, 100_000],
@@ -71,6 +78,15 @@ export class itemSetup extends FormApplication {
             b5: []
         };
 
+        data.materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === "weapon" && (o.subType === "" || o.subType === "light")));
+        data.materials.sort((a, b) => {
+            if (a.display === "No Special Material") return -1;
+            if (b.display === "No Special Material") return 1;
+            if (a.display < b.display) return -1;
+            if (a.display > b.display) return 1;
+            return 0;
+        });
+
         itemSetup.specialAbilities = genWeaponAbilities.meleeAbilities;
         let weaponAbilitiesIds = Object.keys(itemSetup.specialAbilities);
 
@@ -115,7 +131,7 @@ export class itemSetup extends FormApplication {
     }
 
     static async renderInputDialog() {
-        itemSetup.itemSetupInstance = new itemSetup()
+        itemSetup.itemSetupInstance = new itemSetup();
 
         itemSetup.itemChosen = {};
         itemSetup.items = [];
@@ -133,10 +149,14 @@ export class itemSetup extends FormApplication {
         itemSetup.cl = 0;
         itemSetup.aura = "";
         itemSetup.staticBonuses = [];
-        itemSetup.itemSetupInstance.render(true)
+        itemSetup.hp = 0;
+        itemSetup.hardness = 0;
+        itemSetup.sizeHp = 0;
+        itemSetup.sizeHardness = 0;
+        itemSetup.itemSetupInstance.render(true);
     }
 
-    static async resetItemStats(quality) {
+    static async resetItemStats(quality, size) {
         itemSetup.itemName = itemSetup.itemChosen.data.name;
         itemSetup.price = itemSetup.itemChosen.data.data.price;
         itemSetup.weight = itemSetup.itemChosen.data.data.weight;
@@ -146,6 +166,13 @@ export class itemSetup extends FormApplication {
         itemSetup.cl = 0;
         itemSetup.aura = "";
         itemSetup.staticBonuses = [];
+        itemSetup.materialChosen = genSpecialMaterials.specialMaterials.find(o => o.id === "base");
+        itemSetup.hp = itemSetup.itemChosen.data.data.hp.max;
+        itemSetup.hardness = itemSetup.itemChosen.data.data.hardness;
+        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.data.data.hp.max * itemSetup.sizeHpMult[size]));
+        itemSetup.sizeHardness = itemSetup.itemChosen.data.data.hardness;
+        itemSetup.hp = itemSetup.sizeHp;
+        itemSetup.hardness = itemSetup.sizeHardness;
     }
 
     static updateBaseStats(size) {
@@ -154,6 +181,8 @@ export class itemSetup extends FormApplication {
 
         itemSetup.weight = +((baseWeight * itemSetup.weightMult[size]).toFixed(2));
         itemSetup.basePrice = basePrice * itemSetup.priceMult[size];
+
+        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.data.data.hp.max * itemSetup.sizeHpMult[size]));
     }
 
     static updateBonuses(html) {
@@ -180,9 +209,18 @@ export class itemSetup extends FormApplication {
             itemSetup.flatBonusCost += itemSetup.staticBonuses[i].priceMod;
         }
 
-        let extraCost = (itemSetup.masterwork ? itemSetup.mwCost[itemSetup.itemCategory] : 0) +
-        (itemSetup.magic ? itemSetup.totalBonusCost[itemSetup.itemCategory][Math.min(10, itemSetup.totalBonus)] : 0) +
-        itemSetup.flatBonusCost;
+        // Masterwork cost if masterwork and not already counted from material
+        let extraCost = ((itemSetup.masterwork && !itemSetup.materialChosen.masterwork) ? itemSetup.mwCost[itemSetup.itemCategory] : 0);
+
+        // Add in enhancement and bonus costs
+        extraCost += (itemSetup.magic ? itemSetup.totalBonusCost[itemSetup.itemCategory][Math.min(10, itemSetup.totalBonus)] : 0)
+
+        // Add in extra cost to enchant some special materials
+        extraCost += (itemSetup.magic && itemSetup.materialChosen.display === "Cold Iron") ? 2_000: 0;
+        extraCost += (itemSetup.magic && itemSetup.materialChosen.display === "Nexavaran Steel") ? 3_000: 0;
+
+        // add in flat cost bonuses
+        extraCost += itemSetup.flatBonusCost;
 
         if (itemSetup.itemChosen.data.type === "loot" && itemSetup.masterwork) {
             extraCost /= 50;
@@ -191,8 +229,8 @@ export class itemSetup extends FormApplication {
     }
 
     static async updateDisplay(html) {
-        let display = `
-            ${itemSetup.totalBonus > 10 ? "<p class='overbudgetError'>Warning: Total Bonus Greater than 10!</p>" : ""}
+        let overbudgetError = `${itemSetup.totalBonus > 10 ? "Warning: Total Bonus Greater than 10!" : ""}`
+        let display1 = `
             <p><span class="previewLabel">Base Item Name:</span> ${itemSetup.itemName}${(itemSetup.itemChosen.data.type === "loot" & itemSetup.masterwork ? " (50)" : "")}</p>
             <p><span class="previewLabel">Weight:</span> ${itemSetup.weight}</p>
             <p><span class="previewLabel">Cost:</span> ${itemSetup.price}${(itemSetup.itemChosen.data.type === "loot" & itemSetup.masterwork ? " each (" + itemSetup.price * 50 + " total)" : "")}</p>
@@ -200,7 +238,108 @@ export class itemSetup extends FormApplication {
             <p><span class="previewLabel">Enhancement Bonus:</span> ${itemSetup.enhancement}</p>
             <p><span class="previewLabel">Total Bonus:</span> ${itemSetup.totalBonus}</p>`;
 
-        html.find('#itemDetailsDisplay')[0].innerHTML = display;
+        let display2 = `
+            <p><span class="previewLabel">Special Material:</span> ${itemSetup.materialChosen.display}</p>
+            <p><span class="previewLabel">HP:</span> ${itemSetup.hp}</p>
+            <p><span class="previewLabel">Hardness:</span> ${itemSetup.hardness}</p>
+            `;
+
+        $('#overbudgetError')[0].innerHTML = overbudgetError;
+        $('#itemDetailsDisplay1')[0].innerHTML = display1;
+        $('#itemDetailsDisplay2')[0].innerHTML = display2;
+    }
+
+    static async updateMaterialSelector(html) {
+        let materials = [];
+        if (itemSetup.itemChosen.data.type === "weapon") {
+             materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === "weapon" && (o.subType === "" || o.subType === itemSetup.itemChosen.data.data.weaponSubtype)));
+        }
+        else if (itemSetup.itemChosen.data.type === "equipment") {
+            materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === itemSetup.itemChosen.data.data.equipmentType && (o.subType === "" || o.subType === itemSetup.itemChosen.data.data.equipmentSubtype)));
+        }
+        else if (itemSetup.itemChosen.data.type === "loot") {
+            materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || o.category === "loot");
+        }
+
+        materials.sort((a, b) => {
+            if (a.display === "No Special Material") return -1;
+            if (b.display === "No Special Material") return 1;
+            if (a.display < b.display) return -1;
+            if (a.display > b.display) return 1;
+            return 0;
+        });
+
+        let selectorHtml = materials.map(o => `<option value="${o.id}">${o.display}</option>`);
+
+        $('#materialSelect')[0].innerHTML = selectorHtml;
+    }
+
+    static async updateMaterial(materialId, html) {
+        itemSetup.materialChosen = genSpecialMaterials.specialMaterials.find(o => o.id === materialId);
+
+        if (itemSetup.materialChosen.masterwork) {
+            itemSetup.masterwork = true;
+        }
+
+        let basic = genSpecialMaterials.basicMaterials.find(o => o.hardness === itemSetup.itemChosen.data.data.hardness);
+
+        // update hardness for special
+        if (itemSetup.materialChosen.hardness && itemSetup.materialChosen.hardness > 0) {
+            itemSetup.hardness = itemSetup.materialChosen.hardness;
+        }
+        else if (itemSetup.materialChosen.display === "Bone" || itemSetup.materialChosen.display === "Glass" || itemSetup.materialChosen.display === "Gold" || itemSetup.materialChosen.display === "Gold-Plated" || itemSetup.materialChosen.display === "Obsidian" || itemSetup.materialChosen.display === "Stone") {
+            itemSetup.hardness = Math.floor(itemSetup.sizeHardness / 2);
+        }
+        else {
+            itemSetup.hardness = itemSetup.sizeHardness;
+        }
+
+        // update hp for special
+        if (itemSetup.materialChosen.hp && itemSetup.materialChosen.hp > 0) {
+            itemSetup.hp = Math.max(1, Math.floor((itemSetup.sizeHp / basic.hp) * itemSetup.materialChosen.hp));
+        }
+        else if (itemSetup.materialChosen.id === "WhipwoodWeapon") {
+            itemSetup.hp = itemSetup.sizeHp + 5;
+        }
+        else {
+            itemSetup.hp = itemSetup.sizeHp;
+        }
+
+        // update price for special
+        if (itemSetup.materialChosen.priceType === "flat") {
+            itemSetup.basePrice += itemSetup.materialChosen.price;
+        }
+        else if (itemSetup.materialChosen.priceType === "weight") {
+            // add masterwork cost plus gold cost per pound
+            itemSetup.basePrice += (itemSetup.weight * itemSetup.materialChosen.price);
+        }
+        else if (itemSetup.materialChosen.priceType === "weightMW") {
+            // add masterwork cost plus gold cost per pound
+            itemSetup.basePrice += itemSetup.mwCost[itemSetup.itemCategory] + (itemSetup.weight * itemSetup.materialChosen.price);
+        }
+        else if (itemSetup.materialChosen.priceType === "mult") {
+            itemSetup.basePrice *= itemSetup.materialChosen.price;
+        }
+        else if (itemSetup.materialChosen.priceType === "multMW") {
+            // add masterwork cost then multiply total by multiplier
+            itemSetup.basePrice += itemSetup.mwCost[itemSetup.itemCategory]
+            itemSetup.basePrice *= itemSetup.materialChosen.price;
+        }
+
+        // update weight for special
+        itemSetup.weight *= itemSetup.materialChosen.weightMod;
+
+        itemSetup.weight = +(itemSetup.weight.toFixed(4));
+
+        if (itemSetup.materialChosen.masterwork) {
+            $('#qualitySelect input[id="normal"]').prop('disabled', true);
+            if ($('#qualitySelect input[id="normal"]')[0].checked) {
+                $('#qualitySelect input[id="masterwork"]')[0].checked = true;
+            }
+        }
+        else {
+            $('#qualitySelect input[id="normal"]').prop('disabled', false);
+        }
     }
 
     static async updateItemSelector(html) {
@@ -313,8 +452,10 @@ export class itemSetup extends FormApplication {
             itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value);
             await itemSetup.updateAbilitySelectors(html);
             itemSetup.updateDisabled(html);
-            itemSetup.resetItemStats(qualitySelect[0].value);
+            itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
             itemSetup.updateBaseStats(sizeSelect[0].value);
+            itemSetup.updateMaterialSelector(html);
+            itemSetup.updateMaterial(materialSelect[0].value, html);
             itemSetup.updateBonuses(html);
             itemSetup.updatePrice();
             itemSetup.updateDisplay(html);
@@ -329,8 +470,10 @@ export class itemSetup extends FormApplication {
                 itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value);
                 await itemSetup.updateAbilitySelectors(html);
                 itemSetup.updateDisabled(html);
-                itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value);
+                itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
                 itemSetup.updateBaseStats(sizeSelect[0].value);
+                itemSetup.updateMaterialSelector(html);
+                itemSetup.updateMaterial(materialSelect[0].value, html);
                 itemSetup.updateBonuses(html);
                 itemSetup.updatePrice();
                 itemSetup.updateDisplay(html);
@@ -341,16 +484,28 @@ export class itemSetup extends FormApplication {
 
         itemSelector.on('change', async function() {
             itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value);
-            itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value);
+            itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
             itemSetup.updateBaseStats(sizeSelect[0].value);
+            itemSetup.updateMaterialSelector(html);
+            itemSetup.updateMaterial(materialSelect[0].value, html);
             itemSetup.updateBonuses(html);
             itemSetup.updatePrice();
             itemSetup.updateDisplay(html);
         });
 
-
         sizeSelect.on('change', function() {
             itemSetup.updateBaseStats(sizeSelect[0].value);
+            itemSetup.updateMaterial(materialSelect[0].value, html);
+            itemSetup.updatePrice();
+            itemSetup.updateDisplay(html);
+        })
+
+        let materialSelect = $('#materialSelect');
+
+        materialSelect.on('change', async function() {
+            itemSetup.updateBaseStats(sizeSelect[0].value);
+            itemSetup.updateMaterial(materialSelect[0].value, html);
+            itemSetup.updateBonuses(html);
             itemSetup.updatePrice();
             itemSetup.updateDisplay(html);
         })
@@ -360,6 +515,7 @@ export class itemSetup extends FormApplication {
         enhanceSelect.on('change', function() {
             itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value);
             itemSetup.updateBaseStats(sizeSelect[0].value);
+            itemSetup.updateMaterial(materialSelect[0].value, html);
             itemSetup.updateBonuses(html);
             itemSetup.updatePrice();
             itemSetup.updateDisplay(html);
@@ -370,8 +526,9 @@ export class itemSetup extends FormApplication {
 
         qualitySelect.on('change', function() {
             itemSetup.updateDisabled(html);
-            itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value);
+            itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
             itemSetup.updateBaseStats(sizeSelect[0].value);
+            itemSetup.updateMaterial(materialSelect[0].value, html);
             itemSetup.updateBonuses(html);
             itemSetup.updatePrice();
             itemSetup.updateDisplay(html);
@@ -391,10 +548,8 @@ export class itemSetup extends FormApplication {
 
             let itemData = item;
 
-            let sizeHpMult = {fine: .0625, dim: .125, tiny: .25, sm: .5, med: 1, lg: 2, huge: 4, grg: 8, col: 16}
-
-
-            itemData.data.hp.value = itemData.data.hp.max = Math.max(1, Math.floor(item.data.hp.max * sizeHpMult[sizeSelect[0].value]));
+            itemData.data.hp.value = itemData.data.hp.max = itemSetup.hp;
+            itemData.data.hardness = itemSetup.hardness;
 
             let bonusesSelected = $('#abilitySelectors input[type="checkbox"]:checked');
             let bonuses = [];
@@ -420,6 +575,11 @@ export class itemSetup extends FormApplication {
 
             if (itemSetup.masterwork) {
                 itemData.data.masterwork = true;
+            }
+
+            if (itemSetup.materialChosen.id !== "base") {
+                itemData.data.identifiedName = itemData.name = itemSetup.materialChosen.output + " " + itemData.name;
+                itemData.data.description.value += "<p><strong>" + itemSetup.materialChosen.display + "</strong></p><p>" + itemSetup.materialChosen.desc + "</p>";
             }
 
             if (itemSetup.magic) {
@@ -470,9 +630,9 @@ export class itemSetup extends FormApplication {
                 itemData.data.cl = largestCL;
                 itemData.data.aura.school = largestAura;
                 itemData.data.identifiedName = itemData.name = itemPrefix + itemData.name;
-
-                item.update(itemData);
             }
+
+            item.update(itemData);
 
             if ($('input[type="radio"][name="creationOptions"]:checked')[0].value === "create") {
                 await Item.create(item);
@@ -505,7 +665,7 @@ export class itemSetup extends FormApplication {
             bonusChooserDiv.children().prop('disabled', true);
             abilitySelectorsDiv.prop('disabled', true);
             $('#giveActorSelect').prop('disabled', true);
-            itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value);
+            itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
             itemSetup.updateDisplay(html);
         })
 

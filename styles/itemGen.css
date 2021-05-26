@@ -19,7 +19,7 @@
     width: 250px;
 }
 
-#itemPreview .overbudgetError {
+#itemPreview #overbudgetError {
     background: #FF0000;
     color: #FFFFFF;
 }
@@ -27,6 +27,7 @@
 #itemPreview .previewLabel {
     display: inline-block;
     width: 150px;
+    font-weight: bold;
 }
 
 #buttonSection {
@@ -80,6 +81,12 @@
 #itemSetup ul label {
     top: -5px;
     position: relative;
+}
+
+#itemDetailsDisplay1, #itemDetailsDisplay2{
+    width: 50%;
+    position: relative;
+    float: left;
 }
 
 .sidebar-tab .directory-footer .genButton {
