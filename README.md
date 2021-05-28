@@ -18,4 +18,4 @@ The module does not implement any of the special abilities in any way, but the r
 ![image](https://user-images.githubusercontent.com/54455090/119138413-bbdf5080-b9f6-11eb-9a37-695e40ddba38.png)
 
 ## Future Plans
-- Special Materials
+- Open to suggestions
