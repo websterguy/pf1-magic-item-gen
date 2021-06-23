@@ -546,7 +546,7 @@ export class itemSetup extends FormApplication {
         $('#itemGenSubmit').on('click', async function() {
             let item = itemSetup.itemChosen.data;
 
-            let itemData = item;
+            let itemData = duplicate(item);
 
             itemData.data.hp.value = itemData.data.hp.max = itemSetup.hp;
             itemData.data.hardness = itemSetup.hardness;
@@ -559,6 +559,14 @@ export class itemSetup extends FormApplication {
             }
             else if (item.type === "weapon") {
                 itemData.data.weaponData.size = $('#sizeSelect')[0].value;
+                
+                /* Weapon Size Scaling - Not needed with current PF1 system "create attack" implementation
+                let weaponDamage = itemData.data.weaponData.damageRoll.split("d");
+                if (weaponDamage.length === 2) {
+                    let sizeKeys = Object.keys(CONFIG.PF1.sizeChart);
+                    let newDamage = RollPF.safeRoll(`sizeRoll(${weaponDamage[0]}, ${weaponDamage[1]}, ${sizeKeys.indexOf($('#sizeSelect')[0].value)}, 4)`).formula;
+                    itemData.data.weaponData.damageRoll = newDamage;
+                } */
             }
 
             itemData.data.weight = itemSetup.weight;
