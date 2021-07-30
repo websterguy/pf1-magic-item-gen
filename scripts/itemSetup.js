@@ -99,8 +99,8 @@ export class itemSetup extends FormApplication {
                 data: itemSetup.specialAbilities[weaponAbilitiesIds[i]]});
         }
 
-        data.actors = game.actors.contents;
-
+        data.actors = game.actors.filter(o => o.testUserPermission(game.user, 1));
+        
         return data;
     }
 
