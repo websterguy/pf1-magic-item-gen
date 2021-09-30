@@ -100,7 +100,7 @@ export class itemSetup extends FormApplication {
         }
 
         data.actors = game.actors.filter(o => o.testUserPermission(game.user, 1));
-        
+
         return data;
     }
 

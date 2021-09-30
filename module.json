@@ -1,24 +1,34 @@
 {
-  "name": "pf1-magic-item-gen",
-  "title": "PF1 Magic Item Generator",
-  "description": "Magic weapon/armor generator for Foundry VTT PF1e system",
-  "version": "0.0.1",
-  "manifestPlusVersion": "1.0.0",
-  "minimumCoreVersion": "0.8.5",
-  "compatibleCoreVersion": "0.8.5",
-  "authors": [
-    {
-      "name": "websterguy",
-      "url": "https://github.com/websterguy",
-      "discord": "websterguy#1136"
-    }
-  ],
-  "systems": ["pf1"],
-  "esmodules": ["./scripts/itemGen.js"],
-  "styles": ["./styles/itemGen.css"],
-  "templates": ["./templates/itemGenDialog.html", "./templates/weaponCreate.hbs", "./templates/abilitySelection.hbs"],
-  "packs": [],
-  "url": "https://github.com/websterguy/pf1-magic-item-gen",
-  "manifest": "https://github.com/websterguy/pf1-magic-item-gen/releases/latest/download/module.json",
-  "download": "https://github.com/websterguy/pf1-magic-item-gen/releases/download/0.0.1/pf1-magic-item-gen.zip"
+    "name": "pf1-magic-item-gen",
+    "title": "PF1 Magic Item Generator",
+    "description": "Magic weapon/armor generator for Foundry VTT PF1e system",
+    "version": "0.4.0",
+    "manifestPlusVersion": "1.0.0",
+    "minimumCoreVersion": "0.8.6",
+    "compatibleCoreVersion": "0.8.9",
+    "authors": [
+        {
+            "name": "websterguy",
+            "url": "https://github.com/websterguy",
+            "discord": "websterguy#1136"
+        }
+    ],
+    "systems": [
+        "pf1"
+    ],
+    "esmodules": [
+        "./scripts/itemGen.js"
+    ],
+    "styles": [
+        "./styles/itemGen.css"
+    ],
+    "templates": [
+        "./templates/itemGenDialog.html",
+        "./templates/weaponCreate.hbs",
+        "./templates/abilitySelection.hbs"
+    ],
+    "packs": [],
+    "url": "https://github.com/websterguy/pf1-magic-item-gen",
+    "manifest": "https://github.com/websterguy/pf1-magic-item-gen/releases/latest/download/module.json",
+    "download": "https://github.com/websterguy/pf1-magic-item-gen/releases/download/0.4.0/pf1-magic-item-gen.zip"
 }
