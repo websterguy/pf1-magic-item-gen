@@ -558,7 +558,7 @@ export class itemSetup extends FormApplication {
                 itemData.data.size = $('#sizeSelect')[0].value;
             }
             else if (item.type === "weapon") {
-                itemData.data.weaponData.size = $('#sizeSelect')[0].value;
+                itemData.data.size = $('#sizeSelect')[0].value;
                 
                 /* Weapon Size Scaling - Not needed with current PF1 system "create attack" implementation
                 let weaponDamage = itemData.data.weaponData.damageRoll.split("d");
