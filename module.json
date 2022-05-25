@@ -5,7 +5,7 @@
     "version": "0.4.0",
     "manifestPlusVersion": "1.0.0",
     "minimumCoreVersion": "0.8.6",
-    "compatibleCoreVersion": "0.8.9",
+    "compatibleCoreVersion": "9",
     "authors": [
         {
             "name": "websterguy",
