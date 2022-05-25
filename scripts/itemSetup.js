@@ -544,7 +544,7 @@ export class itemSetup extends FormApplication {
         })
 
         $('#itemGenSubmit').on('click', async function() {
-            let item = itemSetup.itemChosen.data;
+            let item = duplicate(itemSetup.itemChosen.data);
 
             let itemData = duplicate(item);
 
@@ -640,7 +640,7 @@ export class itemSetup extends FormApplication {
                 itemData.data.identifiedName = itemData.name = itemPrefix + itemData.name;
             }
 
-            item.update(itemData);
+            mergeObject(item, itemData);
 
             if ($('input[type="radio"][name="creationOptions"]:checked')[0].value === "create") {
                 await Item.create(item);
