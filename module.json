@@ -4,7 +4,7 @@
     "description": "Magic weapon/armor generator for Foundry VTT PF1e system",
     "version": "0.4.0",
     "manifestPlusVersion": "1.0.0",
-    "minimumCoreVersion": "0.8.6",
+    "minimumCoreVersion": "9",
     "compatibleCoreVersion": "9",
     "authors": [
         {
@@ -27,7 +27,7 @@
         "./templates/weaponCreate.hbs",
         "./templates/abilitySelection.hbs"
     ],
-    "minimumSystemVersion": "0.79.5",
+    "minimumSystemVersion": "0.81.1",
     "packs": [],
     "url": "https://github.com/websterguy/pf1-magic-item-gen",
     "manifest": "https://github.com/websterguy/pf1-magic-item-gen/releases/latest/download/module.json",
