@@ -159,7 +159,7 @@ export class itemSetup extends FormApplication {
     static async resetItemStats(quality, size) {
         itemSetup.itemName = itemSetup.itemChosen.data.name;
         itemSetup.price = itemSetup.itemChosen.data.data.price;
-        itemSetup.weight = itemSetup.itemChosen.data.data.weight;
+        itemSetup.weight = itemSetup.itemChosen.data.data.weight.value;
         itemSetup.masterwork = quality === "normal" ? false : true;
         itemSetup.enhancement = 0;
         itemSetup.totalBonus = 0;
@@ -176,7 +176,7 @@ export class itemSetup extends FormApplication {
     }
 
     static updateBaseStats(size) {
-        let baseWeight = itemSetup.itemChosen.data.data.weight;
+        let baseWeight = itemSetup.itemChosen.data.data.weight.value;
         let basePrice = itemSetup.itemChosen.data.data.price;
 
         itemSetup.weight = +((baseWeight * itemSetup.weightMult[size]).toFixed(2));
