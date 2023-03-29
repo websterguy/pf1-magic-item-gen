@@ -64,7 +64,7 @@ export class itemSetup extends FormApplication {
             if (a.name > b.name) return 1;
             return 0;
         });
-        let weapons = itemSetup.items = await weaponIndex.filter(o => o.data.type === "weapon" && o.data.data.weaponSubtype != "ranged");
+        let weapons = itemSetup.items = await weaponIndex.filter(o => o.type === "weapon" && o.system.weaponSubtype != "ranged");
         data.weapons = weapons;
         itemSetup.itemChosen = weapons[0];
         itemSetup.resetItemStats();
@@ -157,9 +157,9 @@ export class itemSetup extends FormApplication {
     }
 
     static async resetItemStats(quality, size) {
-        itemSetup.itemName = itemSetup.itemChosen.data.name;
-        itemSetup.price = itemSetup.itemChosen.data.data.price;
-        itemSetup.weight = itemSetup.itemChosen.data.data.weight.value;
+        itemSetup.itemName = itemSetup.itemChosen.name;
+        itemSetup.price = itemSetup.itemChosen.system.price;
+        itemSetup.weight = itemSetup.itemChosen.system.weight.value;
         itemSetup.masterwork = quality === "normal" ? false : true;
         itemSetup.enhancement = 0;
         itemSetup.totalBonus = 0;
@@ -167,22 +167,22 @@ export class itemSetup extends FormApplication {
         itemSetup.aura = "";
         itemSetup.staticBonuses = [];
         itemSetup.materialChosen = genSpecialMaterials.specialMaterials.find(o => o.id === "base");
-        itemSetup.hp = itemSetup.itemChosen.data.data.hp.max;
-        itemSetup.hardness = itemSetup.itemChosen.data.data.hardness;
-        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.data.data.hp.max * itemSetup.sizeHpMult[size]));
-        itemSetup.sizeHardness = itemSetup.itemChosen.data.data.hardness;
+        itemSetup.hp = itemSetup.itemChosen.system.hp.max;
+        itemSetup.hardness = itemSetup.itemChosen.system.hardness;
+        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.system.hp.max * itemSetup.sizeHpMult[size]));
+        itemSetup.sizeHardness = itemSetup.itemChosen.system.hardness;
         itemSetup.hp = itemSetup.sizeHp;
         itemSetup.hardness = itemSetup.sizeHardness;
     }
 
     static updateBaseStats(size) {
-        let baseWeight = itemSetup.itemChosen.data.data.weight.value;
-        let basePrice = itemSetup.itemChosen.data.data.price;
+        let baseWeight = itemSetup.itemChosen.system.weight.value;
+        let basePrice = itemSetup.itemChosen.system.price;
 
         itemSetup.weight = +((baseWeight * itemSetup.weightMult[size]).toFixed(2));
         itemSetup.basePrice = basePrice * itemSetup.priceMult[size];
 
-        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.data.data.hp.max * itemSetup.sizeHpMult[size]));
+        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.system.hp.max * itemSetup.sizeHpMult[size]));
     }
 
     static updateBonuses(html) {
@@ -200,6 +200,8 @@ export class itemSetup extends FormApplication {
                 }
             }
         }
+        
+        itemSetup.hp = itemSetup.hp + 10 * itemSetup.enhancement;
 
     }
 
@@ -222,7 +224,7 @@ export class itemSetup extends FormApplication {
         // add in flat cost bonuses
         extraCost += itemSetup.flatBonusCost;
 
-        if (itemSetup.itemChosen.data.type === "loot" && itemSetup.masterwork) {
+        if (itemSetup.itemChosen.type === "loot" && itemSetup.masterwork) {
             extraCost /= 50;
         }
         itemSetup.price = itemSetup.basePrice + extraCost;
@@ -231,9 +233,9 @@ export class itemSetup extends FormApplication {
     static async updateDisplay(html) {
         let overbudgetError = `${itemSetup.totalBonus > 10 ? "Warning: Total Bonus Greater than 10!" : ""}`
         let display1 = `
-            <p><span class="previewLabel">Base Item Name:</span> ${itemSetup.itemName}${(itemSetup.itemChosen.data.type === "loot" & itemSetup.masterwork ? " (50)" : "")}</p>
+            <p><span class="previewLabel">Base Item Name:</span> ${itemSetup.itemName}${(itemSetup.itemChosen.type === "loot" & itemSetup.masterwork ? " (50)" : "")}</p>
             <p><span class="previewLabel">Weight:</span> ${itemSetup.weight}</p>
-            <p><span class="previewLabel">Cost:</span> ${itemSetup.price}${(itemSetup.itemChosen.data.type === "loot" & itemSetup.masterwork ? " each (" + itemSetup.price * 50 + " total)" : "")}</p>
+            <p><span class="previewLabel">Cost:</span> ${itemSetup.price}${(itemSetup.itemChosen.type === "loot" & itemSetup.masterwork ? " each (" + itemSetup.price * 50 + " total)" : "")}</p>
             <p><span class="previewLabel">Quality:</span> ${(itemSetup.totalBonus > 0 || itemSetup.flatBonusCost > 0) ? "Magic" : itemSetup.masterwork ? "Masterwork" : "Normal"}</p>
             <p><span class="previewLabel">Enhancement Bonus:</span> ${itemSetup.enhancement}</p>
             <p><span class="previewLabel">Total Bonus:</span> ${itemSetup.totalBonus}</p>`;
@@ -251,13 +253,13 @@ export class itemSetup extends FormApplication {
 
     static async updateMaterialSelector(html) {
         let materials = [];
-        if (itemSetup.itemChosen.data.type === "weapon") {
-             materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === "weapon" && (o.subType === "" || o.subType === itemSetup.itemChosen.data.data.weaponSubtype)));
+        if (itemSetup.itemChosen.type === "weapon") {
+             materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === "weapon" && (o.subType === "" || o.subType === itemSetup.itemChosen.system.weaponSubtype)));
         }
-        else if (itemSetup.itemChosen.data.type === "equipment") {
-            materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === itemSetup.itemChosen.data.data.equipmentType && (o.subType === "" || o.subType === itemSetup.itemChosen.data.data.equipmentSubtype)));
+        else if (itemSetup.itemChosen.type === "equipment") {
+            materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === itemSetup.itemChosen.system.equipmentType && (o.subType === "" || o.subType === itemSetup.itemChosen.system.equipmentSubtype)));
         }
-        else if (itemSetup.itemChosen.data.type === "loot") {
+        else if (itemSetup.itemChosen.type === "loot") {
             materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || o.category === "loot");
         }
 
@@ -281,7 +283,7 @@ export class itemSetup extends FormApplication {
             itemSetup.masterwork = true;
         }
 
-        let basic = genSpecialMaterials.basicMaterials.find(o => o.hardness === itemSetup.itemChosen.data.data.hardness);
+        let basic = genSpecialMaterials.basicMaterials.find(o => o.hardness === itemSetup.itemChosen.system.hardness);
 
         // update hardness for special
         if (itemSetup.materialChosen.hardness && itemSetup.materialChosen.hardness > 0) {
@@ -353,23 +355,23 @@ export class itemSetup extends FormApplication {
 
         let subtype = $('#itemTypeSelect input[name="itemType"]:checked')[0].value;
         if (subtype === "rangedWeapon") {
-            itemSetup.items = await itemIndex.filter(o => o.data.type === "weapon" && o.data.data.weaponSubtype === "ranged");
+            itemSetup.items = await itemIndex.filter(o => o.type === "weapon" && o.system.weaponSubtype === "ranged");
             itemSetup.specialAbilities = genWeaponAbilities.rangedAbilities;
         }
         else if (subtype === "ammunition") {
-            itemSetup.items = await itemIndex.filter(o => o.data.type === "loot");
+            itemSetup.items = await itemIndex.filter(o => o.type === "loot");
             itemSetup.specialAbilities = genWeaponAbilities.ammunitionAbilities;
         }
         else if (subtype === "meleeWeapon") {
-            itemSetup.items = await itemIndex.filter(o => o.data.type === "weapon" && o.data.data.weaponSubtype !== "ranged");
+            itemSetup.items = await itemIndex.filter(o => o.type === "weapon" && o.system.weaponSubtype !== "ranged");
             itemSetup.specialAbilities = genWeaponAbilities.meleeAbilities;
         }
         else if (subtype === "armor") {
-            itemSetup.items = await itemIndex.filter(o => o.data.type === "equipment" && o.data.data.equipmentType === "armor");
+            itemSetup.items = await itemIndex.filter(o => o.type === "equipment" && o.system.equipmentType === "armor");
             itemSetup.specialAbilities = genArmorAbilities.armorAbiliites;
         }
         else if (subtype === "shield") {
-            itemSetup.items = await itemIndex.filter(o => o.data.type === "equipment" && o.data.data.equipmentType === "shield");
+            itemSetup.items = await itemIndex.filter(o => o.type === "equipment" && o.system.equipmentType === "shield");
             itemSetup.specialAbilities = genArmorAbilities.shieldAbilities;
         }
 
@@ -381,7 +383,7 @@ export class itemSetup extends FormApplication {
 
         let itemOptionsHtml = ""
         for (var i = 0; i < itemSetup.items.length; i++) {
-            itemOptionsHtml += `<option value="${itemSetup.items[i].data._id}">${itemSetup.items[i].data.name}</option>`
+            itemOptionsHtml += `<option value="${itemSetup.items[i]._id}">${itemSetup.items[i].name}</option>`
         }
 
         $("#baseItemSelect")[0].innerHTML = itemOptionsHtml;
@@ -495,7 +497,8 @@ export class itemSetup extends FormApplication {
 
         sizeSelect.on('change', function() {
             itemSetup.updateBaseStats(sizeSelect[0].value);
-            itemSetup.updateMaterial(materialSelect[0].value, html);
+            itemSetup.updateMaterial(materialSelect[0].value, html)
+            itemSetup.updateBonuses(html);;
             itemSetup.updatePrice();
             itemSetup.updateDisplay(html);
         })
@@ -544,50 +547,50 @@ export class itemSetup extends FormApplication {
         })
 
         $('#itemGenSubmit').on('click', async function() {
-            let item = duplicate(itemSetup.itemChosen.data);
+            let item = duplicate(itemSetup.itemChosen);
 
             let itemData = duplicate(item);
 
-            itemData.data.hp.value = itemData.data.hp.max = itemSetup.hp;
-            itemData.data.hardness = itemSetup.hardness;
+            itemData.system.hp.value = itemData.system.hp.max = itemSetup.hp;
+            itemData.system.hardness = itemSetup.hardness;
 
             let bonusesSelected = $('#abilitySelectors input[type="checkbox"]:checked');
             let bonuses = [];
 
             if (item.type === "equipment") {
-                itemData.data.size = $('#sizeSelect')[0].value;
+                itemData.system.size = $('#sizeSelect')[0].value;
             }
             else if (item.type === "weapon") {
-                itemData.data.size = $('#sizeSelect')[0].value;
+                itemData.system.size = $('#sizeSelect')[0].value;
                 
                 /* Weapon Size Scaling - Not needed with current PF1 system "create attack" implementation
-                let weaponDamage = itemData.data.weaponData.damageRoll.split("d");
+                let weaponDamage = itemData.system.weaponData.damageRoll.split("d");
                 if (weaponDamage.length === 2) {
                     let sizeKeys = Object.keys(CONFIG.PF1.sizeChart);
                     let newDamage = RollPF.safeRoll(`sizeRoll(${weaponDamage[0]}, ${weaponDamage[1]}, ${sizeKeys.indexOf($('#sizeSelect')[0].value)}, 4)`).formula;
-                    itemData.data.weaponData.damageRoll = newDamage;
+                    itemData.system.weaponData.damageRoll = newDamage;
                 } */
             }
 
-            itemData.data.weight = itemSetup.weight;
+            itemData.system.weight = itemSetup.weight;
 
             // Set price with special adjustment for masterwork/magic ammo
             if (item.type === "loot" && itemSetup.masterwork) {
-                itemData.data.quantity = 50;
+                itemData.system.quantity = 50;
             }
             else {
-                itemData.data.price = itemSetup.price;
+                itemData.system.price = itemSetup.price;
             }
 
-            itemData.data.price = itemSetup.price;
+            itemData.system.price = itemSetup.price;
 
             if (itemSetup.masterwork) {
-                itemData.data.masterwork = true;
+                itemData.system.masterwork = true;
             }
 
             if (itemSetup.materialChosen.id !== "base") {
-                itemData.data.identifiedName = itemData.name = itemSetup.materialChosen.output + " " + itemData.name;
-                itemData.data.description.value += "<p><strong>" + itemSetup.materialChosen.display + "</strong></p><p>" + itemSetup.materialChosen.desc + "</p>";
+                itemData.system.identifiedName = itemData.name = itemSetup.materialChosen.output + " " + itemData.name;
+                itemData.system.description.value += "<p><strong>" + itemSetup.materialChosen.display + "</strong></p><p>" + itemSetup.materialChosen.desc + "</p>";
             }
 
             if (itemSetup.magic) {
@@ -603,13 +606,12 @@ export class itemSetup extends FormApplication {
                     return 0;
                 });
 
-                itemData.data.hardness += (2 * itemSetup.enhancement);
-                itemData.data.hp.value = itemData.data.hp.max += (10 * itemSetup.enhancement);
+                itemData.system.hardness += (2 * itemSetup.enhancement);
                 if (item.type === "equipment") {
-                    itemData.data.armor.enh = itemSetup.enhancement;
+                    itemData.system.armor.enh = itemSetup.enhancement;
                 }
                 else if (item.type === "weapon") {
-                    itemData.data.enh = itemSetup.enhancement;
+                    itemData.system.enh = itemSetup.enhancement;
                 }
 
                 let itemPrefix = "";
@@ -631,13 +633,13 @@ export class itemSetup extends FormApplication {
                         largestAura = "misc";
                     }
 
-                    itemData.data.description.value += "<p><strong>" + bonuses[i].output + "</strong></p><p>" + bonuses[i].desc + "</p>";
+                    itemData.system.description.value += "<p><strong>" + bonuses[i].output + "</strong></p><p>" + bonuses[i].desc + "</p>";
                 }
                 itemPrefix += " ";
 
-                itemData.data.cl = largestCL;
-                itemData.data.aura.school = largestAura;
-                itemData.data.identifiedName = itemData.name = itemPrefix + itemData.name;
+                itemData.system.cl = largestCL;
+                itemData.system.aura.school = largestAura;
+                itemData.system.identifiedName = itemData.name = itemPrefix + itemData.name;
             }
 
             mergeObject(item, itemData);

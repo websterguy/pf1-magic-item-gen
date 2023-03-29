@@ -1,35 +1,39 @@
 {
-    "name": "pf1-magic-item-gen",
-    "title": "PF1 Magic Item Generator",
-    "description": "Magic weapon/armor generator for Foundry VTT PF1e system",
-    "version": "0.4.0",
-    "manifestPlusVersion": "1.0.0",
-    "minimumCoreVersion": "9",
-    "compatibleCoreVersion": "9",
-    "authors": [
-        {
-            "name": "websterguy",
-            "url": "https://github.com/websterguy",
-            "discord": "websterguy#1136"
-        }
-    ],
+  "title": "PF1 Magic Item Generator",
+  "description": "Magic weapon/armor generator for Foundry VTT PF1e system",
+  "version": "0.7.0",
+  "authors": [
+    {
+      "name": "websterguy",
+      "url": "https://github.com/websterguy",
+      "discord": "websterguy#1136",
+      "flags": {}
+    }
+  ],
+  "esmodules": [
+    "scripts/itemGen.js"
+  ],
+  "styles": [
+    "styles/itemGen.css"
+  ],
+  "url": "https://github.com/websterguy/pf1-magic-item-gen",
+  "manifest": "https://github.com/websterguy/pf1-magic-item-gen/releases/latest/download/module.json",
+  "download": "https://github.com/websterguy/pf1-magic-item-gen/releases/download/0.6.0/pf1-magic-item-gen.zip",
+  "id": "pf1-magic-item-gen",
+  "relationships": {
     "systems": [
-        "pf1"
-    ],
-    "esmodules": [
-        "./scripts/itemGen.js"
-    ],
-    "styles": [
-        "./styles/itemGen.css"
-    ],
-    "templates": [
-        "./templates/itemGenDialog.html",
-        "./templates/weaponCreate.hbs",
-        "./templates/abilitySelection.hbs"
-    ],
-    "minimumSystemVersion": "0.81.1",
-    "packs": [],
-    "url": "https://github.com/websterguy/pf1-magic-item-gen",
-    "manifest": "https://github.com/websterguy/pf1-magic-item-gen/releases/latest/download/module.json",
-    "download": "https://github.com/websterguy/pf1-magic-item-gen/releases/download/0.4.0/pf1-magic-item-gen.zip"
+      {
+        "id": "pf1",
+        "type": "system",
+        "compatibility": {
+          "minimum": "0.82.5",
+          "verified": "0.82.5"
+        }
+      }
+    ]
+  },
+  "compatibility": {
+    "minimum": "10.291",
+    "verified": "10.291"
+  }
 }
