@@ -24,6 +24,10 @@
     color: #FFFFFF;
 }
 
+#itemPreview #overbudgetError:empty {
+    min-height: auto;
+}
+
 #itemPreview .previewLabel {
     display: inline-block;
     width: 150px;

@@ -20,7 +20,7 @@
             <div>
                 <legend >Select Base Item:</legend>
                 <select id="baseItemSelect">
-                    {{#each weapons as |weapon id|}}<option value="{{weapon.data._id}}">{{weapon.data.name}}</option>{{/each}}
+                    {{#each weapons as |weapon id|}}<option value="{{weapon._id}}">{{weapon.name}}</option>{{/each}}
                 </select>
             </div>
             <div>
@@ -100,17 +100,17 @@
     <section id="itemPreview">
         <p id="overbudgetError"></p>
         <div id="itemDetailsDisplay1">
-            <p><span class="previewLabel">Base Item Name:</span> {{itemChosen.data.name}}</p>
-            <p><span class="previewLabel">Weight:</span> {{itemChosen.data.data.weight}}</p>
-            <p><span class="previewLabel">Cost:</span> {{itemChosen.data.data.price}}</p>
+            <p><span class="previewLabel">Base Item Name:</span> {{itemChosen.name}}</p>
+            <p><span class="previewLabel">Weight:</span> {{itemChosen.system.weight}}</p>
+            <p><span class="previewLabel">Cost:</span> {{itemChosen.system.price}}</p>
             <p><span class="previewLabel">Quality:</span> {{masterwork}}</p>
             <p><span class="previewLabel">Enhancement Bonus:</span> 0</p>
             <p><span class="previewLabel">Total Bonus:</span> 0</p>
         </div>
         <div id="itemDetailsDisplay2">
             <p><span class="previewLabel">Special Material:</span> No Special Material</p>
-            <p><span class="previewLabel">HP:</span> {{itemChosen.data.data.hp.max}}</p>
-            <p><span class="previewLabel">Hardness:</span> {{itemChosen.data.data.hardness}}</p>
+            <p><span class="previewLabel">HP:</span> {{itemChosen.system.hp.max}}</p>
+            <p><span class="previewLabel">Hardness:</span> {{itemChosen.system.hardness}}</p>
         </div>
     </section>
     <section id="creationOptions">
