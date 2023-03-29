@@ -202,6 +202,7 @@ export class itemSetup extends FormApplication {
         }
         
         itemSetup.hp = itemSetup.hp + 10 * itemSetup.enhancement;
+        itemSetup.hardness += (2 * itemSetup.enhancement);
 
     }
 
