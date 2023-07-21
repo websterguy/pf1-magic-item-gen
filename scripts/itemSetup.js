@@ -258,7 +258,7 @@ export class itemSetup extends FormApplication {
              materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === "weapon" && (o.subType === "" || o.subType === itemSetup.itemChosen.system.weaponSubtype)));
         }
         else if (itemSetup.itemChosen.type === "equipment") {
-            materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === itemSetup.itemChosen.system.equipmentType && (o.subType === "" || o.subType === itemSetup.itemChosen.system.equipmentSubtype)));
+            materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || (o.category === itemSetup.itemChosen.system.subType && (o.subType === "" || o.subType === itemSetup.itemChosen.system.equipmentSubtype)));
         }
         else if (itemSetup.itemChosen.type === "loot") {
             materials = genSpecialMaterials.specialMaterials.filter(o => o.category === "" || o.category === "loot");
