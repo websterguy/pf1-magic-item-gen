@@ -201,8 +201,8 @@ export class itemSetup extends FormApplication {
             }
         }
         
-        itemSetup.hp = itemSetup.hp + 10 * itemSetup.enhancement;
-        itemSetup.hardness += (2 * itemSetup.enhancement);
+        itemSetup.hp = itemSetup.sizeHp + 10 * itemSetup.enhancement;
+        itemSetup.hardness = itemSetup.sizeHardness + (2 * itemSetup.enhancement);
 
     }
 
@@ -368,11 +368,11 @@ export class itemSetup extends FormApplication {
             itemSetup.specialAbilities = genWeaponAbilities.meleeAbilities;
         }
         else if (subtype === "armor") {
-            itemSetup.items = await itemIndex.filter(o => o.type === "equipment" && o.system.equipmentType === "armor");
+            itemSetup.items = await itemIndex.filter(o => o.type === "equipment" && o.system.subType === "armor");
             itemSetup.specialAbilities = genArmorAbilities.armorAbiliites;
         }
         else if (subtype === "shield") {
-            itemSetup.items = await itemIndex.filter(o => o.type === "equipment" && o.system.equipmentType === "shield");
+            itemSetup.items = await itemIndex.filter(o => o.type === "equipment" && o.system.subType === "shield");
             itemSetup.specialAbilities = genArmorAbilities.shieldAbilities;
         }
 
@@ -607,7 +607,6 @@ export class itemSetup extends FormApplication {
                     return 0;
                 });
 
-                itemData.system.hardness += (2 * itemSetup.enhancement);
                 if (item.type === "equipment") {
                     itemData.system.armor.enh = itemSetup.enhancement;
                 }
