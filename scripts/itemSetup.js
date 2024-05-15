@@ -541,6 +541,9 @@ export class itemSetup extends FormApplication {
         $('#abilitySelectors').on('click', function(event) {
             let target = event.target;
             if (target.type === "checkbox") {
+                itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
+                itemSetup.updateBaseStats(sizeSelect[0].value);
+                itemSetup.updateMaterial(materialSelect[0].value, html);
                 itemSetup.updateBonuses(html);
             }
             itemSetup.updatePrice();
