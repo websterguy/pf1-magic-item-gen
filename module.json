@@ -26,14 +26,14 @@
         "id": "pf1",
         "type": "system",
         "compatibility": {
-          "minimum": "0.82.5",
-          "verified": "0.82.5"
+          "minimum": "0.10",
+          "verified": "0.10.3"
         }
       }
     ]
   },
   "compatibility": {
-    "minimum": "10.291",
-    "verified": "10.291"
+    "minimum": "11.315",
+    "verified": "11.315"
   }
 }
