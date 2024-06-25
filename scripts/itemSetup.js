@@ -141,6 +141,7 @@ export class itemSetup extends FormApplication {
         itemSetup.basePrice = 0;
         itemSetup.price = 0;
         itemSetup.weight = 0;
+        itemSetup.mediumWeight = 0;
         itemSetup.masterwork = false;
         itemSetup.magic = false;
         itemSetup.enhancement = 0;
@@ -159,7 +160,7 @@ export class itemSetup extends FormApplication {
     static async resetItemStats(quality, size) {
         itemSetup.itemName = itemSetup.itemChosen.name;
         itemSetup.price = itemSetup.itemChosen.system.price;
-        itemSetup.weight = itemSetup.itemChosen.system.weight.value;
+        itemSetup.weight = itemSetup.itemChosen.system.weight.total;
         itemSetup.masterwork = quality === "normal" ? false : true;
         itemSetup.enhancement = 0;
         itemSetup.totalBonus = 0;
@@ -176,7 +177,7 @@ export class itemSetup extends FormApplication {
     }
 
     static updateBaseStats(size) {
-        let baseWeight = itemSetup.itemChosen.system.weight.value;
+        let baseWeight = itemSetup.itemChosen.system.weight.total;
         let basePrice = itemSetup.itemChosen.system.price;
 
         itemSetup.weight = +((baseWeight * itemSetup.weightMult[size]).toFixed(2));
@@ -330,9 +331,12 @@ export class itemSetup extends FormApplication {
         }
 
         // update weight for special
+        itemSetup.mediumWeight = itemSetup.itemChosen.system.weight.value;
         itemSetup.weight *= itemSetup.materialChosen.weightMod;
+        itemSetup.mediumWeight *= itemSetup.materialChosen.weightMod;
 
         itemSetup.weight = +(itemSetup.weight.toFixed(4));
+        itemSetup.mediumWeight = +(itemSetup.mediumWeight.toFixed(4));
 
         if (itemSetup.materialChosen.masterwork) {
             $('#qualitySelect input[id="normal"]').prop('disabled', true);
@@ -554,6 +558,7 @@ export class itemSetup extends FormApplication {
             let item = duplicate(itemSetup.itemChosen);
 
             let itemData = duplicate(item);
+            console.log(itemData);
 
             itemData.system.hp.value = itemData.system.hp.max = itemSetup.hp;
             itemData.system.hardness = itemSetup.hardness;
@@ -576,7 +581,11 @@ export class itemSetup extends FormApplication {
                 } */
             }
 
-            itemData.system.weight = itemSetup.weight;
+            itemData.system.weight.value = itemSetup.mediumWeight;
+            itemData.system.weight.total = itemSetup.weight;
+            itemData.system.weight.converted = {};
+            itemData.system.weight.converted.total = itemSetup.weight;
+            itemData.system.weight.converted.value = itemSetup.weight;
 
             // Set price with special adjustment for masterwork/magic ammo
             if (item.type === "loot" && itemSetup.masterwork) {
@@ -593,9 +602,29 @@ export class itemSetup extends FormApplication {
             }
 
             if (itemSetup.materialChosen.id !== "base") {
-                itemData.system.identifiedName = itemData.name = itemSetup.materialChosen.output + " " + itemData.name;
+                itemData.name = itemSetup.materialChosen.output + " " + itemData.name;
                 itemData.system.description.value += "<p><strong>" + itemSetup.materialChosen.display + "</strong></p><p>" + itemSetup.materialChosen.desc + "</p>";
+
+                if (itemSetup.materialChosen.output === "Silver") {
+                    itemData.system.material.addon.push('alchemicalsilver');
+                }
+                else {
+                    let systemMaterials = pf1.registry.materialTypes.map(o => {return {id: o._id, name: o.name.toLowerCase()}});
+
+                    let id = systemMaterials.find(o => o.name === itemSetup.materialChosen.display.toLowerCase()).id;
+                    if (!!id) {
+                        itemData.system.material.normal.value = id;
+                    }
+                    else {
+                        itemData.system.material.normal.custom = true;
+                        itemData.system.material.normal.value = itemSetup.materialChosen.output;
+                    }
+                }    
             }
+
+            itemData.system.unidentified.name = item.name;
+            itemData.system.unidentified.price = item.system.price;
+            itemData.system.description.unidentified = item.system.description.value;
 
             if (itemSetup.magic) {
                 let largestCL = 3 * itemSetup.enhancement;
@@ -637,12 +666,36 @@ export class itemSetup extends FormApplication {
                     }
 
                     itemData.system.description.value += "<p><strong>" + bonuses[i].output + "</strong></p><p>" + bonuses[i].desc + "</p>";
+                    itemData.system.alignments = {
+                        lawful: false,
+                        chaotic: false,
+                        good: false,
+                        evil: false
+                    };
+
+                    switch (bonuses[i].output) {
+                        case "Axiomatic":
+                            itemData.system.alignments.lawful = true;
+                            break;
+                        case "Anarchic":
+                            itemData.system.alignments.chaotic = true;
+                            break;
+                        case "Holy":
+                            itemData.system.alignments.good = true;
+                            break;
+                        case "Unholy":
+                            itemData.system.alignments.evil = true;
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 itemPrefix += " ";
 
                 itemData.system.cl = largestCL;
+                if (largestAura === "misc") itemData.system.aura.custom = true;
                 itemData.system.aura.school = largestAura;
-                itemData.system.identifiedName = itemData.name = itemPrefix + itemData.name;
+                itemData.name = itemPrefix + itemData.name;
             }
 
             mergeObject(item, itemData);
