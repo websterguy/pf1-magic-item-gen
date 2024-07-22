@@ -613,11 +613,22 @@ export class itemSetup extends FormApplication {
 
                     let id = systemMaterials.find(o => o.name === itemSetup.materialChosen.display.toLowerCase()).id;
                     if (!!id) {
-                        itemData.system.material.normal.value = id;
+                        if (item.type === "equipment") {
+                            itemData.system.armor.material.normal.value = id;
+                        }
+                        else if (item.type === "weapon") {
+                            itemData.system.material.normal.value = id;
+                        }
                     }
                     else {
-                        itemData.system.material.normal.custom = true;
-                        itemData.system.material.normal.value = itemSetup.materialChosen.output;
+                        if (item.type === "equipment") {
+                            itemData.system.armor.material.normal.custom = true;
+                            itemData.system.armor.material.normal.value = itemSetup.materialChosen.output;
+                        }
+                        else if (item.type === "weapon") {
+                            itemData.system.material.normal.custom = true;
+                            itemData.system.material.normal.value = itemSetup.materialChosen.output;
+                        }
                     }
                 }    
             }
