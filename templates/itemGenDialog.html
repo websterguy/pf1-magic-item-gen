@@ -1,7 +1,7 @@
 <form>
     <section id="itemSetup">
         <div id="itemCatSelect">
-            <legend>Select Item Type:</legend>
+            <legend>Item Type:</legend>
             <input type="radio" name="itemCat" id="weaponSelect" value="weapon" checked>
             <label for="weaponSelect">Weapon / Ammunition</label>
             <input type="radio" name="itemCat" id="armorSelect" value="armor">
@@ -9,7 +9,7 @@
         </div>
         <div id="itemBuilder">
             <div id="itemTypeSelect">
-                <legend>Select Item Type:</legend>
+                <legend>Item Type:</legend>
                 <input type="radio" name="itemType" id="meleeWeapon" value="meleeWeapon" checked>
                 <label for="meleeWeapon">Melee Weapon</label>
                 <input type="radio" name="itemType" id="rangedWeapon" value="rangedWeapon">
@@ -18,13 +18,13 @@
                 <label for="ammunition">Ammunition</label>
             </div>
             <div>
-                <legend >Select Base Item:</legend>
+                <legend >Base Item:</legend>
                 <select id="baseItemSelect">
                     {{#each weapons as |weapon id|}}<option value="{{weapon._id}}">{{weapon.name}}</option>{{/each}}
                 </select>
             </div>
             <div>
-                <legend>Select Size:</legend>
+                <legend>Size:</legend>
                 <select id="sizeSelect">
                     <option value="fine">Fine</option>
                     <option value="dim">Diminutive</option>
@@ -38,13 +38,13 @@
                 </select>
             </div>
             <div>
-                <legend>Select Special Material</legend>
+                <legend>Special Material:</legend>
                 <select id="materialSelect">
                     {{#each materials as |material|}}<option value="{{material.id}}">{{material.display}}</option>{{/each}}
                 </select>
             </div>
             <div id="qualitySelect">
-                <legend>Select Weapon Quality:</legend>
+                <legend>Weapon Quality:</legend>
                 <input type="radio" name="qualitySelect" id="normal" value="normal" checked>
                 <label for="normal">Normal</label>
                 <input type="radio" name="qualitySelect" id="masterwork" value="masterwork">
@@ -53,7 +53,7 @@
                 <label for="magic">Magic</label>
             </div>
             <div id="bonusChooser">
-                <legend>Select Enhancement Level:</legend>
+                <legend>Enhancement Level:</legend>
                 <input type="radio" name="enhancementSelect" id="enhancement0" value="0" checked>
                 <label for="enhancement0">0</label>
                 <input type="radio" name="enhancementSelect" id="enhancement1" value="1">

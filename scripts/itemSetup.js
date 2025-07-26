@@ -66,9 +66,9 @@ export class itemSetup extends FormApplication {
         });
         let weapons = itemSetup.items = await weaponIndex.filter(o => o.type === "weapon" && o.system.weaponSubtype != "ranged");
         data.weapons = weapons;
-        itemSetup.itemChosen = weapons[0];
+        itemSetup.itemChosen = weapons[0].toObject();
         itemSetup.resetItemStats();
-        data.itemChosen = weapons[0];
+        data.itemChosen = weapons[0].toObject();
         data.weaponAbilities = {
             b0: [],
             b1: [],
@@ -151,7 +151,9 @@ export class itemSetup extends FormApplication {
         itemSetup.aura = "";
         itemSetup.staticBonuses = [];
         itemSetup.hp = 0;
+        itemSetup.baseHp = 0;
         itemSetup.hardness = 0;
+        itemSetup.baseHardness = 0;
         itemSetup.sizeHp = 0;
         itemSetup.sizeHardness = 0;
         itemSetup.itemSetupInstance.render(true);
@@ -160,7 +162,7 @@ export class itemSetup extends FormApplication {
     static async resetItemStats(quality, size) {
         itemSetup.itemName = itemSetup.itemChosen.name;
         itemSetup.price = itemSetup.itemChosen.system.price;
-        itemSetup.weight = itemSetup.itemChosen.system.weight.total;
+        itemSetup.weight = itemSetup.itemChosen.system.weight.value;
         itemSetup.masterwork = quality === "normal" ? false : true;
         itemSetup.enhancement = 0;
         itemSetup.totalBonus = 0;
@@ -170,20 +172,22 @@ export class itemSetup extends FormApplication {
         itemSetup.materialChosen = genSpecialMaterials.specialMaterials.find(o => o.id === "base");
         itemSetup.hp = itemSetup.itemChosen.system.hp.max;
         itemSetup.hardness = itemSetup.itemChosen.system.hardness;
-        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.system.hp.max * itemSetup.sizeHpMult[size]));
+        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.system.hp.base * itemSetup.sizeHpMult[size]));
         itemSetup.sizeHardness = itemSetup.itemChosen.system.hardness;
         itemSetup.hp = itemSetup.sizeHp;
+        itemSetup.baseHp = itemSetup.itemChosen.system.hp.base;
         itemSetup.hardness = itemSetup.sizeHardness;
+        itemSetup.baseHardness = itemSetup.hardness;
     }
 
     static updateBaseStats(size) {
-        let baseWeight = itemSetup.itemChosen.system.weight.total;
+        let baseWeight = itemSetup.itemChosen.system.weight.value;
         let basePrice = itemSetup.itemChosen.system.price;
 
         itemSetup.weight = +((baseWeight * itemSetup.weightMult[size]).toFixed(2));
         itemSetup.basePrice = basePrice * itemSetup.priceMult[size];
 
-        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.system.hp.max * itemSetup.sizeHpMult[size]));
+        itemSetup.sizeHp = Math.max(1, Math.floor(itemSetup.itemChosen.system.hp.base * itemSetup.sizeHpMult[size]));
     }
 
     static updateBonuses(html) {
@@ -204,7 +208,6 @@ export class itemSetup extends FormApplication {
         
         itemSetup.hp = itemSetup.hp + 10 * itemSetup.enhancement;
         itemSetup.hardness = itemSetup.hardness + (2 * itemSetup.enhancement);
-
     }
 
     static updatePrice() {
@@ -297,13 +300,17 @@ export class itemSetup extends FormApplication {
         else {
             itemSetup.hardness = itemSetup.sizeHardness;
         }
+        itemSetup.baseHardness = itemSetup.hardness;
 
         // update hp for special
         if (itemSetup.materialChosen.hp && itemSetup.materialChosen.hp > 0) {
             itemSetup.hp = Math.max(1, Math.floor((itemSetup.sizeHp / basic.hp) * itemSetup.materialChosen.hp));
+            itemSetup.baseHp = Math.max(1, (itemSetup.baseHp / basic.hp) * itemSetup.materialChosen.hp);
+            
         }
         else if (itemSetup.materialChosen.id === "WhipwoodWeapon") {
             itemSetup.hp = itemSetup.sizeHp + 5;
+            itemSetup.baseHp += 5;
         }
         else {
             itemSetup.hp = itemSetup.sizeHp;
@@ -474,7 +481,7 @@ export class itemSetup extends FormApplication {
 
                 await itemSetup.updateItemSelector(html);
 
-                itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value);
+                itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value).toObject();
                 await itemSetup.updateAbilitySelectors(html);
                 itemSetup.updateDisabled(html);
                 itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
@@ -490,7 +497,7 @@ export class itemSetup extends FormApplication {
         let itemSelector = $('#baseItemSelect');
 
         itemSelector.on('change', async function() {
-            itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value);
+            itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value).toObject();
             itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
             itemSetup.updateBaseStats(sizeSelect[0].value);
             itemSetup.updateMaterialSelector(html);
@@ -555,22 +562,19 @@ export class itemSetup extends FormApplication {
         })
 
         $('#itemGenSubmit').on('click', async function() {
-            let item = duplicate(itemSetup.itemChosen);
+            let item = itemSetup.itemChosen;
 
-            let itemData = duplicate(item);
-            console.log(itemData);
-
-            itemData.system.hp.value = itemData.system.hp.max = itemSetup.hp;
-            itemData.system.hardness = itemSetup.hardness;
+            item.system.hp.base = itemSetup.baseHp;
+            item.system.hardness = itemSetup.baseHardness;
 
             let bonusesSelected = $('#abilitySelectors input[type="checkbox"]:checked');
             let bonuses = [];
 
             if (item.type === "equipment") {
-                itemData.system.size = $('#sizeSelect')[0].value;
+                item.system.size = $('#sizeSelect')[0].value;
             }
             else if (item.type === "weapon") {
-                itemData.system.size = $('#sizeSelect')[0].value;
+                item.system.size = $('#sizeSelect')[0].value;
                 
                 /* Weapon Size Scaling - Not needed with current PF1 system "create attack" implementation
                 let weaponDamage = itemData.system.weaponData.damageRoll.split("d");
@@ -581,32 +585,32 @@ export class itemSetup extends FormApplication {
                 } */
             }
 
-            itemData.system.weight.value = itemSetup.mediumWeight;
-            itemData.system.weight.total = itemSetup.weight;
-            itemData.system.weight.converted = {};
-            itemData.system.weight.converted.total = itemSetup.weight;
-            itemData.system.weight.converted.value = itemSetup.weight;
+            item.system.weight.value = itemSetup.mediumWeight;
+            // itemData.system.weight.total = itemSetup.weight;
+            // itemData.system.weight.converted = {};
+            // itemData.system.weight.converted.total = itemSetup.weight;
+            // itemData.system.weight.converted.value = itemSetup.weight;
 
             // Set price with special adjustment for masterwork/magic ammo
             if (item.type === "loot" && itemSetup.masterwork) {
-                itemData.system.quantity = 50;
+                item.system.quantity = 50;
             }
             else {
-                itemData.system.price = itemSetup.price;
+                item.system.price = itemSetup.price;
             }
 
-            itemData.system.price = itemSetup.price;
+            item.system.price = itemSetup.price;
 
             if (itemSetup.masterwork) {
-                itemData.system.masterwork = true;
+                item.system.masterwork = true;
             }
 
             if (itemSetup.materialChosen.id !== "base") {
-                itemData.name = itemSetup.materialChosen.output + " " + itemData.name;
-                itemData.system.description.value += "<p><strong>" + itemSetup.materialChosen.display + "</strong></p><p>" + itemSetup.materialChosen.desc + "</p>";
+                item.name = itemSetup.materialChosen.output + " " + item.name;
+                item.system.description.value = item.system.description.value.concat("<p><strong>", itemSetup.materialChosen.display, "</strong></p>", itemSetup.materialChosen.desc);
 
                 if (itemSetup.materialChosen.output === "Silver") {
-                    itemData.system.material.addon.push('alchemicalsilver');
+                    item.system.material.addon.push('alchemicalsilver');
                 }
                 else {
                     let systemMaterials = pf1.registry.materialTypes.map(o => {return {id: o._id, name: o.name.toLowerCase()}});
@@ -614,28 +618,28 @@ export class itemSetup extends FormApplication {
                     let id = systemMaterials.find(o => o.name === itemSetup.materialChosen.display.toLowerCase()).id;
                     if (!!id) {
                         if (item.type === "equipment") {
-                            itemData.system.armor.material.normal.value = id;
+                            item.system.armor.material.normal.value = id;
                         }
                         else if (item.type === "weapon") {
-                            itemData.system.material.normal.value = id;
+                            item.system.material.normal.value = id;
                         }
                     }
                     else {
                         if (item.type === "equipment") {
-                            itemData.system.armor.material.normal.custom = true;
-                            itemData.system.armor.material.normal.value = itemSetup.materialChosen.output;
+                            item.system.armor.material.normal.custom = true;
+                            item.system.armor.material.normal.value = itemSetup.materialChosen.output;
                         }
                         else if (item.type === "weapon") {
-                            itemData.system.material.normal.custom = true;
-                            itemData.system.material.normal.value = itemSetup.materialChosen.output;
+                            item.system.material.normal.custom = true;
+                            item.system.material.normal.value = itemSetup.materialChosen.output;
                         }
                     }
                 }    
             }
 
-            itemData.system.unidentified.name = item.name;
-            itemData.system.unidentified.price = item.system.price;
-            itemData.system.description.unidentified = item.system.description.value;
+            item.system.unidentified.name = item.name;
+            item.system.unidentified.price = item.system.price;
+            item.system.description.unidentified = item.system.description.value;
 
             if (itemSetup.magic) {
                 let largestCL = 3 * itemSetup.enhancement;
@@ -651,10 +655,10 @@ export class itemSetup extends FormApplication {
                 });
 
                 if (item.type === "equipment") {
-                    itemData.system.armor.enh = itemSetup.enhancement;
+                    item.system.armor.enh = itemSetup.enhancement;
                 }
                 else if (item.type === "weapon") {
-                    itemData.system.enh = itemSetup.enhancement;
+                    item.system.enh = itemSetup.enhancement;
                 }
 
                 let itemPrefix = "";
@@ -676,26 +680,27 @@ export class itemSetup extends FormApplication {
                         largestAura = "misc";
                     }
 
-                    itemData.system.description.value += "<p><strong>" + bonuses[i].output + "</strong></p><p>" + bonuses[i].desc + "</p>";
-                    itemData.system.alignments = {
+                    item.system.description.value = item.system.description.value.concat("<p><strong>", bonuses[i].output, "</strong></p>", bonuses[i].desc);
+                    item.system.alignments = {
                         lawful: false,
                         chaotic: false,
                         good: false,
                         evil: false
                     };
 
+
                     switch (bonuses[i].output) {
                         case "Axiomatic":
-                            itemData.system.alignments.lawful = true;
+                            item.system.alignments.lawful = true;
                             break;
                         case "Anarchic":
-                            itemData.system.alignments.chaotic = true;
+                            item.system.alignments.chaotic = true;
                             break;
                         case "Holy":
-                            itemData.system.alignments.good = true;
+                            item.system.alignments.good = true;
                             break;
                         case "Unholy":
-                            itemData.system.alignments.evil = true;
+                            item.system.alignments.evil = true;
                             break;
                         default:
                             break;
@@ -703,13 +708,14 @@ export class itemSetup extends FormApplication {
                 }
                 itemPrefix += " ";
 
-                itemData.system.cl = largestCL;
-                if (largestAura === "misc") itemData.system.aura.custom = true;
-                itemData.system.aura.school = largestAura;
-                itemData.name = itemPrefix + itemData.name;
+                item.system.cl = largestCL;
+                if (largestAura === "misc") item.system.aura.custom = true;
+                item.system.aura.school = largestAura;
+                if (item.type === 'equipment' || item.type === 'weapon') item.system.material.addon.push('magic');
+                item.name = itemPrefix + item.name;
             }
 
-            mergeObject(item, itemData);
+            //mergeObject(item, itemData);
 
             if ($('input[type="radio"][name="creationOptions"]:checked')[0].value === "create") {
                 await Item.create(item);

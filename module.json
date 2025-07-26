@@ -1,7 +1,7 @@
 {
   "title": "PF1 Magic Item Generator",
   "description": "Magic weapon/armor generator for Foundry VTT PF1e system",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "authors": [
     {
       "name": "websterguy",
@@ -26,14 +26,14 @@
         "id": "pf1",
         "type": "system",
         "compatibility": {
-          "minimum": "0.10",
-          "verified": "0.10.3"
+          "minimum": 11,
+          "verified": "11.8"
         }
       }
     ]
   },
   "compatibility": {
-    "minimum": "11.315",
-    "verified": "11.315"
+    "minimum": "12.343",
+    "verified": "13.346"
   }
 }
