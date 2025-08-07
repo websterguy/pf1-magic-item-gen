@@ -463,7 +463,7 @@ export class itemSetup extends FormApplication {
                     <label for="shieldEquip">Shield</label>`;
             }
             await itemSetup.updateItemSelector(html);
-            itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value);
+            itemSetup.itemChosen = itemSetup.items.find(o => o.id === $('#baseItemSelect')[0].value).toObject();
             await itemSetup.updateAbilitySelectors(html);
             itemSetup.updateDisabled(html);
             itemSetup.resetItemStats($('#qualitySelect input[name="qualitySelect"]:checked')[0].value, sizeSelect[0].value);
@@ -711,11 +711,10 @@ export class itemSetup extends FormApplication {
                 item.system.cl = largestCL;
                 if (largestAura === "misc") item.system.aura.custom = true;
                 item.system.aura.school = largestAura;
-                if (item.type === 'equipment' || item.type === 'weapon') item.system.material.addon.push('magic');
+                if (item.type === 'equipment') item.system.armor.material.addon.push('magic');
+                if (item.type === 'weapon') item.system.material.addon.push('magic');
                 item.name = itemPrefix + item.name;
             }
-
-            //mergeObject(item, itemData);
 
             if ($('input[type="radio"][name="creationOptions"]:checked')[0].value === "create") {
                 await Item.create(item);
